@@ -45,4 +45,18 @@ describe("Mint Token", function () {
     const balance = await orionToken.balanceOf(receiver.address);
     expect(parseInt(balance)).to.equal(amount);
   })
+  it("Should revert mint token by address not permitted", async () => {
+    const [, minter, receiver] = await ethers.getSigners();
+
+    const Token = await ethers.getContractFactory("OrionToken");
+
+    const orionToken = await Token.deploy();
+
+    try {
+      const amount = 1;
+      await orionToken.connect(minter).mint(receiver.address, amount);
+    } catch(ex) {
+      expect(ex.message.includes("must have minter role to mint")).to.equal(true);
+    }
+  })
 })
