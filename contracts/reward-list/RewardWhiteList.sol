@@ -66,6 +66,13 @@ contract RewardWhiteList is Ownable {
   }
 
   /**
+   * @dev returns time starts for rewarding
+   */
+  function rewardStartsAt(address user_) public view virtual returns (uint256) {
+    return rewards[user_].startTime;
+  }
+
+  /**
    * @dev returns total amount of rewards has been assigned
    */
   function totalRewards() public view returns (uint256) {
