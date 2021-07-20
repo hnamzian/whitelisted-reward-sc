@@ -56,73 +56,39 @@ describe("RewardPayout contract: Term", function () {
   })
 });
 
-describe("RewardPayout: Rewards", () => {
-  it("Should add user to rewards list", async () => {
-    const Token = await ethers.getContractFactory("OrionToken");
-
-    const totalSupply = 1;
-    const orionToken = await Token.deploy(totalSupply);
-
+describe("RewardPayout: Get reward", () => {
+  it("Should transfer ORN as rewards to user", async () => {
     const [, user] = await ethers.getSigners();
 
-    const RewardPayout = await ethers.getContractFactory("RewardPayout");
-
-    const term = 1;
-    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
-
-    const amount = 1;
-    await rewardPayout.addUserToRewardList(user.address, amount);
-
-    expect(await rewardPayout.rewardsOf(user.address)).to.equal(amount);
-  })
-  it("Should revert adding user to rewards list by unpermitted user", async () => {
-    let reverted = false;
-
     const Token = await ethers.getContractFactory("OrionToken");
 
-    const totalSupply = 1;
+    const totalSupply = 100;
     const orionToken = await Token.deploy(totalSupply);
-
-    const [, invalidOwner, user] = await ethers.getSigners();
 
     const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
-    const term = 1;
+    const term = 5;
     const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
+    
+    await orionToken.transfer(rewardPayout.address, 100);
 
-    const amount = 1;
-    try {
-      await rewardPayout.connect(invalidOwner).addUserToRewardList(user.address, amount);
-    } catch(ex) {
-      reverted = ex.message.includes("revert");
+    const rewardAmount = 20;
+    await rewardPayout.addUserToRewardList(user.address, rewardAmount);
+
+    const rewardStartTime = await rewardPayout.rewardStartsAt(user.address);
+    const rate = rewardAmount / term;
+    let earned = 0;
+    while (earned < rewardAmount) {
+      await rewardPayout.connect(user).getReward();
+      earned = await rewardPayout.earned(user.address);
+      const balance = await orionToken.balanceOf(user.address);
+
+      const payments = await rewardPayout.paymentsOf(user.address);
+      const [, lastPaymentTime] = payments[payments.length - 1];
+
+      const totalPayment = rate * (lastPaymentTime - rewardStartTime);
+      expect(earned).to.equal(totalPayment);
+      expect(balance).to.equal(totalPayment); 
     }
-
-    expect(reverted).to.equal(true);
-  })
-  it("Should revert adding existing user to rewards list", async () => {
-    let reverted = false;
-
-    const Token = await ethers.getContractFactory("OrionToken");
-
-    const totalSupply = 1;
-    const orionToken = await Token.deploy(totalSupply);
-
-    const [user] = await ethers.getSigners();
-
-    const RewardPayout = await ethers.getContractFactory("RewardPayout");
-
-    const term = 1;
-    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
-
-    const amount = 1;
-    await rewardPayout.addUserToRewardList(user.address, amount);
-
-    try {
-      await rewardPayout.addUserToRewardList(user.address, amount);
-    } catch(ex) {
-      reverted = ex.message.includes("User already exists");
-    }
-
-    expect(reverted).to.equal(true);
   })
 })
