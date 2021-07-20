@@ -64,6 +64,13 @@ contract RewardList is Ownable {
     emit RewardAssigned(user_, amount_, block.timestamp);
   }
 
+  function updateRewardAmount(address user_, uint256 amount_) public onlyOwner {
+    require(rewards[user_].startTime > 0, "RewardList: User does not exist!");
+    require(amount_ > payouts[user_], "RewardList: New amount cannot be lower than current payouts!");
+    rewards[user_].amount = amount_;
+    emit RewardAssigned(user_, amount_, rewards[user_].startTime);
+  }
+
   /**
    * @dev returns total amount of rewards assigned to a specified address
    */
