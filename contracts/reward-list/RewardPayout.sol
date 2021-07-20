@@ -72,6 +72,8 @@ contract RewardPayout is RewardWhiteList {
     uint256 _paid = payouts[_to];
     // total amount must be paid till now
     uint256 _total_payout = _reward.amount.mul(block.timestamp - _reward.startTime).div(_term);
+    _total_payout = _total_payout > _reward.amount ? _reward.amount : _total_payout;
+
     // amount must be rewarded
     require(_total_payout > _paid, "RewardList: payout amount is 0!");
     uint256 _payout = _total_payout.sub(_paid);
