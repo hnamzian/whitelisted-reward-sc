@@ -18,6 +18,14 @@ contract RewardPayout is RewardWhiteList {
   // rewards has been paid to each address
   mapping(address => uint256) payouts;
 
+  // staruct contining amount and timestamp of a reward paid
+  struct Payment {
+    uint256 amount;
+    uint256 timestamp;
+  }
+  // history of payments
+  mapping(address => Payment[]) public payments;
+
   uint256 _totalPayouts;
 
   IERC20 orionToken;
@@ -76,9 +84,18 @@ contract RewardPayout is RewardWhiteList {
     // verify contract balance
     require(orionToken.balanceOf(address(this)) > _payout, "RewardList: insufficient balance to pay rewards!");
 
+    //
+    Payment[] storage _payments = payments[msg.sender];
+    _payments.push(Payment(_payout, block.timestamp));
+    
     // transfer token
     orionToken.safeTransfer(msg.sender, _payout);
     emit Rewarded(_to, _total_payout);
+  }
+
+  // return list of payments
+  function paymentsOf(address user_) public view returns (Payment[] memory) {
+    return payments[user_];
   }
 
   /**
