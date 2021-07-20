@@ -15,5 +15,7 @@ contract OrionToken is ERC20 {
   string constant NAME = "ORION";
   string constant SYMBOL = "ORN";
 
-  constructor() ERC20(NAME, SYMBOL) {}
+  constructor(uint256 totalSupply_) ERC20(NAME, SYMBOL) {
+    _mint(msg.sender, totalSupply_);
+  }
 }
