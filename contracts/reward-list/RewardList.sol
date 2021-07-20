@@ -90,9 +90,9 @@ contract RewardList is Ownable {
     // total amount must be paid till now
     uint256 _total_payout = _reward.amount.mul(block.timestamp - _reward.startTime).div(_term);
     // amount must be rewarded
+    require(_total_payout > _paid, "RewardList: payout amount is 0!");
     uint256 _payout = _total_payout.sub(_paid);
 
-    require(_payout > 0, "RewardList: payout amount is 0!");
     // update payouts
     payouts[_to] = _total_payout;
     // update totalPayouts
@@ -100,7 +100,7 @@ contract RewardList is Ownable {
     
     // verify contract balance
     require(orionToken.balanceOf(address(this)) > _payout, "RewardList: insufficient balance to pay rewards!");
-    
+
     // transfer token
     orionToken.safeTransfer(msg.sender, _payout);
     emit Rewarded(_to, _total_payout);
