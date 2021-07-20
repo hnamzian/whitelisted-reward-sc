@@ -110,3 +110,57 @@ describe("RewardWhiteList: Update whitelist", () => {
     expect(reverted).to.equal(true);
   })
 })
+
+describe("RewardWhiteList: Remove from Whitelist", () => {
+  it("Should remove user from whitelist", async () => {
+    const [, user] = await ethers.getSigners();
+
+    const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+
+    const rewardWhiteList = await RewardWhiteList.deploy();
+
+    let rewardAmount = 1;
+    await rewardWhiteList.addUserToRewardList(user.address, rewardAmount);
+
+    await rewardWhiteList.removeFromRewardList(user.address);
+
+    expect(await rewardWhiteList.isWhitelisted(user.address)).to.equal(false);
+  })
+  it("Should revert removing non-existing user from whitelist", async () => {
+    let reverted = false;
+
+    const [, user] = await ethers.getSigners();
+
+    const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+
+    const rewardWhiteList = await RewardWhiteList.deploy();
+
+    try {
+      await rewardWhiteList.removeFromRewardList(user.address);
+    } catch(ex) {
+      reverted = ex.message.includes("User does not exist");
+    }
+
+    expect(reverted).to.equal(true);
+  })
+  it("Should revert removing user from whitelist by unpermitted user", async () => {
+    let reverted = false;
+
+    const [, user] = await ethers.getSigners();
+
+    const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+
+    const rewardWhiteList = await RewardWhiteList.deploy();
+
+    let rewardAmount = 1;
+    await rewardWhiteList.addUserToRewardList(user.address, rewardAmount);
+
+    try {
+      await rewardWhiteList.connect(user).removeFromRewardList(user.address);
+    } catch(ex) {
+      reverted = ex.message.includes("revert");
+    }
+
+    expect(reverted).to.equal(true);
+  })
+})
