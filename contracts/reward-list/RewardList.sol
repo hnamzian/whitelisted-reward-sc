@@ -98,6 +98,9 @@ contract RewardList is Ownable {
     // update totalPayouts
     _total_payout = _total_payout.add(_payout);
     
+    // verify contract balance
+    require(orionToken.balanceOf(address(this)) > _payout, "RewardList: insufficient balance to pay rewards!");
+    
     // transfer token
     orionToken.safeTransfer(msg.sender, _payout);
     emit Rewarded(_to, _total_payout);
