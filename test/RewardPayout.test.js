@@ -139,3 +139,36 @@ describe("RewardPayout: Get reward", () => {
     expect(reverted).to.equal(true);
   })
 })
+
+describe("RewardPayouts: Update Rewrds", () => {
+  it("Should revert updating reward amount lower payouts", async () => {
+    let reverted = false;
+
+    const [, user] = await ethers.getSigners();
+
+    const Token = await ethers.getContractFactory("OrionToken");
+
+    const totalSupply = 100;
+    const orionToken = await Token.deploy(totalSupply);
+
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
+
+    let term = 5;
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
+    
+    await orionToken.transfer(rewardPayout.address, 100);
+
+    let rewardAmount = 20;
+    await rewardPayout.addUserToRewardList(user.address, rewardAmount);
+
+    await rewardPayout.connect(user).getReward();
+
+    rewardAmount = 0;
+    try {
+      await rewardPayout.updateRewardAmount(user.address, rewardAmount);
+    } catch(ex) {
+      reverted = ex.message.includes("New amount cannot be lower than current payouts")
+    }
+    expect(reverted).to.equal(true);
+  })
+})
