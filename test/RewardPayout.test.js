@@ -172,3 +172,35 @@ describe("RewardPayouts: Update Rewrds", () => {
     expect(reverted).to.equal(true);
   })
 })
+
+describe("RewardPayouts: Remove Rewards", () => {
+  it("Should set reward amount to totalPayouts when remvoed from whitelist", async () => {
+    let reverted = false;
+
+    const [, user] = await ethers.getSigners();
+
+    const Token = await ethers.getContractFactory("OrionToken");
+
+    const totalSupply = 100;
+    const orionToken = await Token.deploy(totalSupply);
+
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
+
+    let term = 5;
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
+    
+    await orionToken.transfer(rewardPayout.address, 100);
+
+    let rewardAmount = 20;
+    await rewardPayout.addUserToRewardList(user.address, rewardAmount);
+
+    await rewardPayout.connect(user).getReward();
+
+    await rewardPayout.removeFromRewardList(user.address);
+
+    const earned = await rewardPayout.earned(user.address);
+    const reward = await rewardPayout.rewardsOf(user.address);
+
+    expect(reward).to.equal(earned);
+  })
+})
