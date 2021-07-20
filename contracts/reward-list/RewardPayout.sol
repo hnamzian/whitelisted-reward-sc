@@ -52,13 +52,13 @@ contract RewardPayout is RewardWhiteList {
 
   function updateRewardAmount(address user_, uint256 amount_) public override onlyOwner {
     require(amount_ > payouts[user_], "RewardList: New amount cannot be lower than current payouts!");
-    updateRewardAmount(user_, amount_);
+    super.updateRewardAmount(user_, amount_);
   }
 
   function removeFromRewardList(address user_) public override onlyOwner {
     rewards[user_].amount = payouts[user_];
     _totalRewards = _totalRewards.add(payouts[user_]).sub(rewards[user_].amount);
-    removeFromRewardList(user_);    
+    super.removeFromRewardList(user_);    
   }
 
   /**
