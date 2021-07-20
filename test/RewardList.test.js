@@ -15,6 +15,8 @@ describe("RewardPayout contract: Term", function () {
     expect(await rewardPayout.term()).to.equal(term);
   });
   it("Should revert deployment with term equals 0", async () => {
+    let reverted = false;
+
     const Token = await ethers.getContractFactory("OrionToken");
 
     const totalSupply = 1;
@@ -26,10 +28,14 @@ describe("RewardPayout contract: Term", function () {
     try {
       await RewardPayout.deploy(term, orionToken.address);
     } catch(ex) {
-      expect(ex.message).includes("term must be greater than 0");
+      reverted = ex.message.includes("term must be greater than 0");
     }
+
+    expect(reverted).to.equal(true);
   })
   it("Should revert setting term to 0", async () => {
+    let reverted = false;
+
     const Token = await ethers.getContractFactory("OrionToken");
 
     const totalSupply = 1;
@@ -43,8 +49,10 @@ describe("RewardPayout contract: Term", function () {
     try {
       await rewardPayout.setTerm(0);
     } catch(ex) {
-      expect(ex.message).includes("term must be greater than 0");
+      reverted = ex.message.includes("term must be greater than 0");
     }
+
+    expect(reverted).to.equal(true);
   })
 });
 
@@ -68,6 +76,8 @@ describe("RewardPayout: Rewards", () => {
     expect(await rewardPayout.rewardsOf(user.address)).to.equal(amount);
   })
   it("Should revert adding user to rewards list by unpermitted user", async () => {
+    let reverted = false;
+
     const Token = await ethers.getContractFactory("OrionToken");
 
     const totalSupply = 1;
@@ -84,10 +94,14 @@ describe("RewardPayout: Rewards", () => {
     try {
       await rewardPayout.connect(invalidOwner).addUserToRewardList(user.address, amount);
     } catch(ex) {
-      expect(ex.message).includes("revert");
+      reverted = ex.message.includes("revert");
     }
+
+    expect(reverted).to.equal(true);
   })
   it("Should revert adding existing user to rewards list", async () => {
+    let reverted = false;
+
     const Token = await ethers.getContractFactory("OrionToken");
 
     const totalSupply = 1;
@@ -106,7 +120,9 @@ describe("RewardPayout: Rewards", () => {
     try {
       await rewardPayout.addUserToRewardList(user.address, amount);
     } catch(ex) {
-      expect(ex.message).includes("User alreadt exists");
+      reverted = ex.message.includes("User already exists");
     }
+
+    expect(reverted).to.equal(true);
   })
 })

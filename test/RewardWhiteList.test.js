@@ -29,7 +29,7 @@ describe("RewardWhiteList: Add to Whitelist", () => {
     try {
       await rewardWhiteList.addUserToRewardList(user.address, rewardAmount);
     } catch (ex) {
-      reverted = ex.message.includes("User alreadt exists");
+      reverted = ex.message.includes("User already exists");
     }
 
     expect(reverted).to.equal(true);
@@ -46,6 +46,63 @@ describe("RewardWhiteList: Add to Whitelist", () => {
     const rewardAmount = 1;
     try {
       await rewardWhiteList.connect(user).addUserToRewardList(user.address, rewardAmount);
+    } catch (ex) {
+      reverted = ex.message.includes("revert");
+    }
+
+    expect(reverted).to.equal(true);
+  })
+})
+
+describe("RewardWhiteList: Update whitelist", () => {
+  it("Should add an address to reward whitelist", async () => {
+    const [, user] = await ethers.getSigners();
+
+    const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+
+    const rewardWhiteList = await RewardWhiteList.deploy();
+
+    let rewardAmount = 1;
+    await rewardWhiteList.addUserToRewardList(user.address, rewardAmount);
+
+    rewardAmount = 0;
+    await rewardWhiteList.updateRewardAmount(user.address, rewardAmount);
+
+    expect(await rewardWhiteList.isWhitelisted(user.address)).to.equal(true);
+    expect(await rewardWhiteList.rewardsOf(user.address)).to.equal(rewardAmount);
+  })
+  it("Should revert updating non-existing user of whitelist", async () => {
+    let reverted = false;
+
+    const [, user] = await ethers.getSigners();
+
+    const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+
+    const rewardWhiteList = await RewardWhiteList.deploy();
+
+    const rewardAmount = 1;
+    try {
+      await rewardWhiteList.updateRewardAmount(user.address, rewardAmount);
+    } catch (ex) {
+      reverted = ex.message.includes("User does not exist");
+    }
+
+    expect(reverted).to.equal(true);
+  })
+  it("Should revert updating whitelist by unpermitted user", async () => {
+    let reverted = false;
+
+    const [, user] = await ethers.getSigners();
+
+    const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+
+    const rewardWhiteList = await RewardWhiteList.deploy();
+
+    const rewardAmount = 1;
+    await rewardWhiteList.addUserToRewardList(user.address, rewardAmount);
+
+    try {
+      await rewardWhiteList.connect(user).updateRewardAmount(user.address, 0);
     } catch (ex) {
       reverted = ex.message.includes("revert");
     }

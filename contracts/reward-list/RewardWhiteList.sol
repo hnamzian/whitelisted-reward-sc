@@ -27,7 +27,7 @@ contract RewardWhiteList is Ownable {
    * @dev adds new address to rewards list and assigns a specified amount as its total amount
    */
   function addUserToRewardList(address user_, uint256 amount_) public virtual onlyOwner {
-    require(rewards[user_].exists == false, "RewardList: User alreadt exists!");
+    require(rewards[user_].exists == false, "RewardList: User already exists!");
 
     _totalRewards.add(amount_).sub(rewards[user_].amount);
 
