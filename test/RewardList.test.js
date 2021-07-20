@@ -1,18 +1,18 @@
 const { expect } = require("chai");
 
-describe("RewardList contract: Term", function () {
+describe("RewardPayout contract: Term", function () {
   it("Deployment should assign term", async () => {
     const Token = await ethers.getContractFactory("OrionToken");
 
     const totalSupply = 1;
     const orionToken = await Token.deploy(totalSupply);
 
-    const RewardList = await ethers.getContractFactory("RewardList");
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
     const term = 1;
-    const rewardList = await RewardList.deploy(term, orionToken.address);
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
 
-    expect(await rewardList.term()).to.equal(term);
+    expect(await rewardPayout.term()).to.equal(term);
   });
   it("Should revert deployment with term equals 0", async () => {
     const Token = await ethers.getContractFactory("OrionToken");
@@ -20,11 +20,11 @@ describe("RewardList contract: Term", function () {
     const totalSupply = 1;
     const orionToken = await Token.deploy(totalSupply);
     
-    const RewardList = await ethers.getContractFactory("RewardList");
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
     const term = 0;
     try {
-      await RewardList.deploy(term, orionToken.address);
+      await RewardPayout.deploy(term, orionToken.address);
     } catch(ex) {
       expect(ex.message).includes("term must be greater than 0");
     }
@@ -35,20 +35,20 @@ describe("RewardList contract: Term", function () {
     const totalSupply = 1;
     const orionToken = await Token.deploy(totalSupply);
 
-    const RewardList = await ethers.getContractFactory("RewardList");
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
     const term = 1;
-    const rewardList = await RewardList.deploy(term, orionToken.address);
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
 
     try {
-      await rewardList.setTerm(0);
+      await rewardPayout.setTerm(0);
     } catch(ex) {
       expect(ex.message).includes("term must be greater than 0");
     }
   })
 });
 
-describe("RewardList: Rewards", () => {
+describe("RewardPayout: Rewards", () => {
   it("Should add user to rewards list", async () => {
     const Token = await ethers.getContractFactory("OrionToken");
 
@@ -57,15 +57,15 @@ describe("RewardList: Rewards", () => {
 
     const [, user] = await ethers.getSigners();
 
-    const RewardList = await ethers.getContractFactory("RewardList");
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
     const term = 1;
-    const rewardList = await RewardList.deploy(term, orionToken.address);
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
 
     const amount = 1;
-    await rewardList.addUserToRewardList(user.address, amount);
+    await rewardPayout.addUserToRewardList(user.address, amount);
 
-    expect(await rewardList.rewardsOf(user.address)).to.equal(amount);
+    expect(await rewardPayout.rewardsOf(user.address)).to.equal(amount);
   })
   it("Should revert adding user to rewards list by unpermitted user", async () => {
     const Token = await ethers.getContractFactory("OrionToken");
@@ -75,14 +75,14 @@ describe("RewardList: Rewards", () => {
 
     const [, invalidOwner, user] = await ethers.getSigners();
 
-    const RewardList = await ethers.getContractFactory("RewardList");
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
     const term = 1;
-    const rewardList = await RewardList.deploy(term, orionToken.address);
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
 
     const amount = 1;
     try {
-      await rewardList.connect(invalidOwner).addUserToRewardList(user.address, amount);
+      await rewardPayout.connect(invalidOwner).addUserToRewardList(user.address, amount);
     } catch(ex) {
       expect(ex.message).includes("revert");
     }
@@ -95,16 +95,16 @@ describe("RewardList: Rewards", () => {
 
     const [user] = await ethers.getSigners();
 
-    const RewardList = await ethers.getContractFactory("RewardList");
+    const RewardPayout = await ethers.getContractFactory("RewardPayout");
 
     const term = 1;
-    const rewardList = await RewardList.deploy(term, orionToken.address);
+    const rewardPayout = await RewardPayout.deploy(term, orionToken.address);
 
     const amount = 1;
-    await rewardList.addUserToRewardList(user.address, amount);
+    await rewardPayout.addUserToRewardList(user.address, amount);
 
     try {
-      await rewardList.addUserToRewardList(user.address, amount);
+      await rewardPayout.addUserToRewardList(user.address, amount);
     } catch(ex) {
       expect(ex.message).includes("User alreadt exists");
     }

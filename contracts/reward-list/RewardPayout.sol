@@ -2,37 +2,27 @@
 
 pragma solidity ^0.8.0;
 
+import "./RewardWhiteList.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
-contract RewardList is Ownable {
+contract RewardPayout is RewardWhiteList {
   using SafeMath for uint256;
   using SafeERC20 for IERC20;
 
   // period of time in seconds user must be rewarded proportionally
   uint256 _term;
 
-  // struct contains amount of reward and starting date for payment
-  struct Reward {
-    uint256 amount;
-    uint256 startTime;
-    bool exists;
-  }
-
-  // rewards must be paid to each user (address)
-  mapping(address => Reward) rewards;
   // rewards has been paid to each address
   mapping(address => uint256) payouts;
 
-  uint256 _totalRewards;
   uint256 _totalPayouts;
 
   IERC20 orionToken;
 
   event Term(uint256);
-  event RewardAssigned(address indexed, uint256 amount, uint256 startTime);
   event Rewarded(address indexed, uint256 amount);
 
   constructor(uint256 term_, address orionToken_) {
@@ -52,40 +42,9 @@ contract RewardList is Ownable {
     emit Term(_term);
   }
 
-  /**
-   * @dev adds new address to rewards list and assigns a specified amount as its total amount
-   */
-  function addUserToRewardList(address user_, uint256 amount_) public onlyOwner {
-    require(rewards[user_].exists == false, "RewardList: User alreadt exists!");
-
-    _totalRewards.add(amount_).sub(rewards[user_].amount);
-
-    Reward memory _reward = Reward(amount_, block.timestamp, true);
-    rewards[user_] = _reward;
-    emit RewardAssigned(user_, amount_, block.timestamp);
-  }
-
-  function updateRewardAmount(address user_, uint256 amount_) public onlyOwner {
-    require(rewards[user_].exists == true, "RewardList: User does not exist!");
+  function updateRewardAmount(address user_, uint256 amount_) public override onlyOwner {
     require(amount_ > payouts[user_], "RewardList: New amount cannot be lower than current payouts!");
-    rewards[user_].amount = amount_;
-    emit RewardAssigned(user_, amount_, rewards[user_].startTime);
-  }
-
-  function removeFromRewardList(address user_) public onlyOwner {
-    require(rewards[user_].exists == true, "RewardList: User does not exist!");
-    rewards[user_].exists = false;
-  }
-
-  function isWhitelisted(address user_) public view returns (bool) {
-    return rewards[user_].exists;
-  }
-
-  /**
-   * @dev returns total amount of rewards assigned to a specified address
-   */
-  function rewardsOf(address user_) public view returns (uint256) {
-    return rewards[user_].amount;
+    updateRewardAmount(user_, amount_);
   }
 
   /**
