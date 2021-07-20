@@ -18,6 +18,7 @@ contract RewardList is Ownable {
   struct Reward {
     uint256 amount;
     uint256 startTime;
+    bool exists;
   }
 
   // rewards must be paid to each user (address)
@@ -55,20 +56,29 @@ contract RewardList is Ownable {
    * @dev adds new address to rewards list and assigns a specified amount as its total amount
    */
   function addUserToRewardList(address user_, uint256 amount_) public onlyOwner {
-    require(rewards[user_].startTime == 0, "RewardList: User alreadt exists!");
+    require(rewards[user_].exists == false, "RewardList: User alreadt exists!");
 
     _totalRewards.add(amount_).sub(rewards[user_].amount);
 
-    Reward memory _reward = Reward(amount_, block.timestamp);
+    Reward memory _reward = Reward(amount_, block.timestamp, true);
     rewards[user_] = _reward;
     emit RewardAssigned(user_, amount_, block.timestamp);
   }
 
   function updateRewardAmount(address user_, uint256 amount_) public onlyOwner {
-    require(rewards[user_].startTime > 0, "RewardList: User does not exist!");
+    require(rewards[user_].exists == true, "RewardList: User does not exist!");
     require(amount_ > payouts[user_], "RewardList: New amount cannot be lower than current payouts!");
     rewards[user_].amount = amount_;
     emit RewardAssigned(user_, amount_, rewards[user_].startTime);
+  }
+
+  function removeFromRewardList(address user_) public onlyOwner {
+    require(rewards[user_].exists == true, "RewardList: User does not exist!");
+    rewards[user_].exists = false;
+  }
+
+  function isWhitelisted(address user_) public view returns (bool) {
+    return rewards[user_].exists;
   }
 
   /**
