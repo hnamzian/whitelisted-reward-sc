@@ -47,6 +47,12 @@ contract RewardPayout is RewardWhiteList {
     updateRewardAmount(user_, amount_);
   }
 
+  function removeFromRewardList(address user_) public override onlyOwner {
+    rewards[user_].amount = payouts[user_];
+    _totalRewards = _totalRewards.add(payouts[user_]).sub(rewards[user_].amount);
+    removeFromRewardList(user_);    
+  }
+
   /**
    * @dev calculates total amounts must be rewarded and transfers ORN to the address
    */
@@ -80,10 +86,6 @@ contract RewardPayout is RewardWhiteList {
    */
   function earned(address user) public view returns (uint256) {
     return payouts[user];
-  }
-
-  function totalRewards() public view returns (uint256) {
-    return _totalRewards;
   }
 
   function totalPayouts() public view returns (uint256) {

@@ -31,7 +31,7 @@ contract RewardWhiteList is Ownable {
   function addUserToRewardList(address user_, uint256 amount_) public virtual onlyOwner {
     require(rewards[user_].exists == false, "RewardList: User already exists!");
 
-    _totalRewards.add(amount_).sub(rewards[user_].amount);
+    _totalRewards = _totalRewards.add(amount_);
 
     Reward memory _reward = Reward(amount_, block.timestamp, true);
     rewards[user_] = _reward;
@@ -40,12 +40,16 @@ contract RewardWhiteList is Ownable {
 
   function updateRewardAmount(address user_, uint256 amount_) public virtual onlyOwner {
     require(rewards[user_].exists == true, "RewardList: User does not exist!");
+    
+    _totalRewards = _totalRewards.add(amount_).sub(rewards[user_].amount);
+    
     rewards[user_].amount = amount_;
     emit RewardUpdated(user_, amount_);
   }
 
   function removeFromRewardList(address user_) public virtual onlyOwner {
     require(rewards[user_].exists == true, "RewardList: User does not exist!");
+
     rewards[user_].exists = false;
     emit RewardRemvoed(user_);
   }
@@ -59,5 +63,12 @@ contract RewardWhiteList is Ownable {
    */
   function rewardsOf(address user_) public view virtual returns (uint256) {
     return rewards[user_].amount;
+  }
+
+  /**
+   * @dev returns total amount of rewards has been assigned
+   */
+  function totalRewards() public view returns (uint256) {
+    return _totalRewards;
   }
 }
