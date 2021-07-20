@@ -164,3 +164,21 @@ describe("RewardWhiteList: Remove from Whitelist", () => {
     expect(reverted).to.equal(true);
   })
 })
+
+describe("RewardWhiteList: Total rewards", () => {
+  it("Should update correctly total rewards", async () => {
+    const [, user1, user2] = await ethers.getSigners();
+  
+      const RewardWhiteList = await ethers.getContractFactory("RewardWhiteList");
+  
+      const rewardWhiteList = await RewardWhiteList.deploy();
+  
+      const user1RewardAmount = 1;
+      await rewardWhiteList.addUserToRewardList(user1.address, user1RewardAmount);
+      expect(await rewardWhiteList.totalRewards()).to.equal(user1RewardAmount);
+  
+      const user2RewardAmount = 1;
+      await rewardWhiteList.addUserToRewardList(user2.address, user2RewardAmount);
+      expect(await rewardWhiteList.totalRewards()).to.equal(user1RewardAmount + user2RewardAmount);
+  })
+})
