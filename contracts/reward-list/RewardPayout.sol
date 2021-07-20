@@ -84,10 +84,13 @@ contract RewardPayout is RewardWhiteList {
     // verify contract balance
     require(orionToken.balanceOf(address(this)) > _payout, "RewardList: insufficient balance to pay rewards!");
 
-    //
+    // Insert new payment to the list
     Payment[] storage _payments = payments[msg.sender];
     _payments.push(Payment(_payout, block.timestamp));
     
+    // update totalPayouts
+    _totalPayouts = _totalPayouts.add(_payout);
+
     // transfer token
     orionToken.safeTransfer(msg.sender, _payout);
     emit Rewarded(_to, _total_payout);

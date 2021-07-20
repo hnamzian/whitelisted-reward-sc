@@ -89,6 +89,7 @@ describe("RewardPayout: Get reward", () => {
       const totalPayment = rate * (lastPaymentTime - rewardStartTime);
       expect(earned).to.equal(totalPayment);
       expect(balance).to.equal(totalPayment); 
+      expect(await rewardPayout.totalPayouts()).to.equal(totalPayment);
     }
   })
 })
