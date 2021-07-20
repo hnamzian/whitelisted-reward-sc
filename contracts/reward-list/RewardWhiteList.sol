@@ -19,7 +19,9 @@ contract RewardWhiteList is Ownable {
   mapping(address => Reward) rewards;
 
   uint256 _totalRewards;
-  event RewardAssigned(address indexed, uint256 amount, uint256 startTime);
+  event RewardAssigned(address indexed account, uint256 amount, uint256 startTime);
+  event RewardUpdated(address indexed account, uint256 amount);
+  event RewardRemvoed(address indexed account);
 
   constructor() {}
 
@@ -39,12 +41,13 @@ contract RewardWhiteList is Ownable {
   function updateRewardAmount(address user_, uint256 amount_) public virtual onlyOwner {
     require(rewards[user_].exists == true, "RewardList: User does not exist!");
     rewards[user_].amount = amount_;
-    emit RewardAssigned(user_, amount_, rewards[user_].startTime);
+    emit RewardUpdated(user_, amount_);
   }
 
   function removeFromRewardList(address user_) public virtual onlyOwner {
     require(rewards[user_].exists == true, "RewardList: User does not exist!");
     rewards[user_].exists = false;
+    emit RewardRemvoed(user_);
   }
 
   function isWhitelisted(address user_) public view virtual returns (bool) {
